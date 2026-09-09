@@ -1,0 +1,150 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/careerhub_pro/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String?
+  email           String    @unique
+  password        String
+  emailVerified   DateTime?
+  image           String?
+  onboarded       Boolean   @default(false)
+  careerMotivation String?
+  jobTimeline     String?
+  helpArea        String?
+  targetJobTitles String    @default("[]")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  resumes         Resume[]
+  jobs            Job[]
+  documents       Document[]
+  coverLetters    CoverLetter[]
+  accounts        Account[]
+  sessions        Session[]
+  aiUsage         AiUsage[]
+}
+
+model AiUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  date      String
+  bucket    String   @default("ai")
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date, bucket])
+  @@index([userId])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Resume {
+  id              String   @id @default(cuid())
+  userId          String
+  title           String
+  template        String   @default("modern")
+  fullName        String   @default("")
+  email           String   @default("")
+  phone           String   @default("")
+  location        String   @default("")
+  targetTitle     String   @default("")
+  summary         String   @default("")
+  experience      String   @default("[]")
+  education       String   @default("[]")
+  skills          String   @default("[]")
+  certifications  String   @default("[]")
+  projects        String   @default("[]")
+  volunteering    String   @default("[]")
+  awards          String   @default("[]")
+  publications    String   @default("[]")
+  interests       String   @default("[]")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Job {
+  id          String   @id @default(cuid())
+  userId      String
+  company     String
+  position    String
+  location    String   @default("")
+  url         String   @default("")
+  salary      String   @default("")
+  status      String   @default("wishlist")
+  notes       String   @default("")
+  description String   @default("")
+  appliedDate DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model Document {
+  id               String   @id @default(cuid())
+  userId           String
+  name             String
+  type             String   @default("other")
+  cloudStoragePath String
+  isPublic         Boolean  @default(false)
+  contentType      String   @default("application/octet-stream")
+  fileSize         Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CoverLetter {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  content     String   @default("")
+  jobTitle    String   @default("")
+  company     String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
